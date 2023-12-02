@@ -9,8 +9,11 @@ use regex::{Captures, Regex};
 fn main() -> io::Result<()> {
 	let mut input = io::read_to_string(io::stdin())?;
 	let args: Vec<String> = std::env::args().collect();
-	if args.len() >= 2 && ["2", "b", "B"].map(|x| {x.to_string()}).contains(&args[1]) {
+	if args.len() >= 2 &&
+		["2", "b", "B"].map(|x| {x.to_string()})
+			.contains(&args[1]) {
 		/* PUZZLE PART TWO */
+		/* Unfinished: Albeit it works on the test input for Day #1 part #2, it fails on the whole input, due to [SPOILER] overlaping number words [/SPOILER] */
 		input = with_digitized_spelled_numbers(input);
 	}
 	println!("{}", solution_of(input));
