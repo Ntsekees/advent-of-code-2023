@@ -4,19 +4,19 @@ use num_bigint::BigUint;
 use num_traits::{Zero,};
 
 use std::collections::HashMap;
-use regex::{Captures, Regex};
 
 fn main() -> io::Result<()> {
-	let mut input = io::read_to_string(io::stdin())?;
+	let input_stream = io::stdin();
+	let part_id: u8;
 	let args: Vec<String> = std::env::args().collect();
 	if args.len() >= 2 &&
-		["2", "b", "B"].map(|x| {x.to_string()})
+		["1", "a", "A"].map(|x| {x.to_string()})
 			.contains(&args[1]) {
-		/* PUZZLE PART TWO */
-		/* Unfinished: Albeit it works on the test input for Day #1 part #2, it fails on the whole input, due to [SPOILER] overlaping number words [/SPOILER] */
-		input = with_digitized_spelled_numbers(input);
+		part_id = 1; // PUZZLE PART ONE
+	} else {
+		part_id = 2; // PUZZLE PART TWO
 	}
-	println!("{}", solution_of(input));
+	println!("{}", solution_of(input_stream, part_id));
 	Ok(())
 }
 
@@ -28,55 +28,62 @@ fn digitization_map() -> HashMap<&'static str, &'static str> {
 	])
 }
 
-fn with_digitized_spelled_numbers(s: String) -> String {
-	let mut kl: Vec<&str> = Vec::new();
-	for key in digitization_map().keys() {
-		kl.push(key);
-	}
-	let rs = format!("({})", &kl.join("|"));
-	let re = Regex::new(&rs).unwrap();
-	let f = |capt: &Captures| {
-		if let Some(v) = digitization_map().get(&capt[0]) {
-			v.to_string()
-		} else {
-			capt[0].to_string()
-		}
-	};
-	let res = re.replace_all(&s, f);
-	format!("{}", res)
+fn rev_digitization_map() -> HashMap<&'static str, &'static str> {
+	HashMap::from([
+		("orez", "0"), ("eno", "1"), ("owt", "2"), ("eerht", "3"),
+		("ruof", "4"), ("evif", "5"), ("xis", "6"), ("neves", "7"),
+		("thgie", "8"), ("enin", "9")
+	])
 }
 
 const DIGITS: &str = &"0123456789";
 
-fn solution_of(s: String) -> String {
-	let lines_iter = s.split("\n");
+fn solution_of(stream: io::Stdin, mode: u8) -> String {
 	let mut n: BigUint = Zero::zero();
-	for line in lines_iter {
-		n += value_for(line);
+	for line_r in stream.lines() {
+		if let Ok(line) = line_r {
+			n += value_for(line, mode);
+		}
 	}
 	return n.to_string();
 }
 
-fn value_for(s: &str) -> usize {
-	if s == "" {
-		return 0;
-	}
-	let mut first = 0;
-	let mut last = 0;
-	let mut first_digit_has_been_found = false;
-	for c in s.chars().rev() {
-		if let Some(i) = DIGITS.find(c) {
-			if !first_digit_has_been_found {
-				first = i;
-				last = i;
-				first_digit_has_been_found = true;
-			} else {
-				last = i;
+fn value_for(s: String, mode: u8) -> usize {
+	let (dm1, dm2) = match mode {
+		1 => (None, None),
+		2 => (Some(digitization_map()), Some(rev_digitization_map())),
+		_ => panic!("⚠ Invalid mode {}!", mode)
+	};
+	let first: usize = first_value_for(s.to_string(), dm1);
+	let last: usize =  first_value_for(reversed(s.to_string()), dm2);
+	last + first * 0xA
+}
+
+fn reversed(s: String) -> String {
+	s.chars().rev().collect()
+}
+
+fn first_value_for(
+	line: String,
+	dm: Option<HashMap<&'static str, &'static str>>
+) -> usize {
+	let mut iter = line.chars();
+	loop {
+		let s = iter.as_str();
+		let next = iter.next();
+		if s == "" || next == None {
+			break;
+		}
+		if let Some(n) = DIGITS.find(next.unwrap()) {
+			return n;
+		} else if let Some(ref m) = dm {
+			for k in m.keys() {
+				if s.starts_with(k) {
+					return DIGITS.find(m.get(k).unwrap()).unwrap();
+				}
 			}
 		}
 	}
-	if !first_digit_has_been_found {
-		eprintln!("⚠ Warning: no digit found in line ⟪{}⟫!", s);
-	}
-	first + last * 0xA
+	eprintln!("⚠ ⟦first_value_for⟧: No number found in line ⟪{}⟫!", line);
+	0
 }
