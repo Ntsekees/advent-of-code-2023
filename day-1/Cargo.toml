@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 num-bigint = "0.4"
 num-traits = "0.2"
-regex = "1.10.2"
+# regex = "1.10.2"
 
