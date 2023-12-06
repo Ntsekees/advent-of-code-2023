@@ -9,12 +9,27 @@
 
 :- implementation.
 
-:- import_module uint, list, string, char.
+:- import_module uint, list, string, char, maybe, bool.
 :- import_module require. % ⟦error/1⟧
 
 main(!IO) :-
-	has_solution(stdin_stream, Solution, !IO),
+	io.command_line_arguments(Args, !IO),
+	R = nth(0u, Args),
+	(
+		if R = yes(A)
+		then IsPart2: bool = (if A = "1" then no else yes)
+		else IsPart2: bool = yes
+	),
+	has_solution(stdin_stream, IsPart2, Solution, !IO),
 	io.write_string(Solution ++ "\n", !IO).
+
+:- func nth(uint, list(T)) = maybe(T).
+nth(_, []) = no.
+nth(I, [X | Xs]) = (
+    if I = 0u
+    then yes(X)
+    else nth(I - 1u, Xs)
+    ).
 
 :- type game
 	---> game(
@@ -34,24 +49,43 @@ main(!IO) :-
 
 :- pred has_solution(
 	io.text_input_stream::in,
+	bool::in,
 	string::out,
 	io::di, io::uo
 	).
-has_solution(Stream, Solution, !IO) :-
+has_solution(Stream, IsPartTwo, Solution, !IO) :-
 	read_game_stream(Stream, [], GameList, !IO),
-	FilterPred = (
-		pred(G::in) is semidet :-
-			G = game(_, CubesetList),
-			MaxCubeset = max_cubeset_of(CubesetList),
-			isnt_greater_cubeset(MaxCubeset, puzzle_limit)
-	),
-	FilteredList = filter(FilterPred, GameList),
-	Solution = uint_to_string(foldl(F, FilteredList, 0u)),
-	F = (
-		func(Game, Acc) = NextAcc :-
-			Game = game(ID, _),
-			NextAcc = Acc + ID
+	(
+		if IsPartTwo = yes
+		then (
+			Solution = uint_to_string(foldl(F, GameList, 0u)),
+			F = (
+				func(Game, Acc) = NextAcc :-
+					Game = game(_, CubesetList),
+					NextAcc = Acc +
+						cubeset_power_of(max_cubeset_of(CubesetList))
+			)
+		)
+		else (
+			FilterPred = (
+				pred(G::in) is semidet :-
+					G = game(_, CubesetList),
+					MaxCubeset = max_cubeset_of(CubesetList),
+					isnt_greater_cubeset(MaxCubeset, puzzle_limit)
+			),
+			FilteredList = filter(FilterPred, GameList),
+			Solution = uint_to_string(foldl(F, FilteredList, 0u)),
+			F = (
+				func(Game, Acc) = NextAcc :-
+					Game = game(ID, _),
+					NextAcc = Acc + ID
+			)
+		)
 	).
+
+:- func cubeset_power_of(cubeset) = uint.
+cubeset_power_of(CS) =
+	CS^red * CS^green * CS^blue.
 
 :- func max_cubeset_of(list(cubeset)) = cubeset.
 max_cubeset_of(L) = R :-
