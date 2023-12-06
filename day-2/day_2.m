@@ -98,8 +98,8 @@ read_game_stream(Stream, L1, L2, !IO) :-
 :- func read_game_line(string) = game.
 read_game_line(Line) = Game :-
 	(
-		split(Line, length("Game "), "Game ", Rump1),
-		[GameIdStr, GameContent] = split_at_string(": ", Rump1),
+		split(Line, length("Game "), "Game ", Remainder),
+		[GameIdStr, GameContent] = split_at_string(": ", Remainder),
 		split_at_string("; ", GameContent) = CubesetStringList,
 		map(cubeset_string_reads_as, CubesetStringList, CubesetList),
 		to_uint(GameIdStr, GameId),
