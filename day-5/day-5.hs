@@ -73,12 +73,12 @@ locations_from_seeds seeds maplist =
 					map
 						(\ pair -> fst pair)
 						(foldl
-							xf
+							f
 							[(range, True)]
 							(maps mapdata)))
 				list
-	xf :: [(SizedRange, Bool)] -> RangeMap -> [(SizedRange, Bool)]
-	xf = \ l -> \ m -> as_flattened $ map (with_applied_map m) l
+	f :: [(SizedRange, Bool)] -> RangeMap -> [(SizedRange, Bool)]
+	f = \ l -> \ m -> as_flattened $ map (with_applied_map m) l
 	with_applied_map ::
 		RangeMap -> (SizedRange, Bool) -> [(SizedRange, Bool)]
 	with_applied_map m (r, b) =
