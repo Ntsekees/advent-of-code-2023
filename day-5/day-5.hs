@@ -122,7 +122,6 @@ sr_intersection_of a b =
 			Nothing
 	else -- sr_position a > sr_position b
 		sr_intersection_of b a
-		--if sr_position b + sr_size b <= sr_position a
 		
 proceeded ::
 	SizedRange ->
