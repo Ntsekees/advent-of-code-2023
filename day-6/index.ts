@@ -1,16 +1,20 @@
 
 var fs = require("fs");
 
+if (process.argv.length > 2 && process.argv[2] == "1")
+	var mode = 1;
+else
+	var mode = 2;
 // Reading from Stdin:
 var input = fs.readFileSync(0).toString('utf8');
-
-console.log(solution_of(input, 1));
+console.log(solution_of(input, mode));
 process.exit();
 
 function solution_of(input: string, mode: number): string {
 	var times: Array<number>;
 	var distances: Array<number>;
-	var races: Array<Map<string, number>> = races_from_input(input);
+	var races: Array<Map<string, number>> =
+		races_from_input(input, mode);
 	var solution_ranges: Array<Array<number>> = [];
 	races.forEach(function (e, i) {
 		solution_ranges.push(solution_range_for_race(e));
@@ -41,12 +45,14 @@ function solution_range_for_race(
 	return [1, -1].map(x => (-t + x * Math.sqrt(Δ)) / -2);
 }
 
-function races_from_input(input: string)
+function races_from_input(input: string, mode: number)
 : Array<Map<string, number>> {
 	var lines: Array<Array<string>> =
 		input.split("\n").map(l => l.split(/\s+/));
 	console.assert(lines[0].shift() === "Time:");
 	console.assert(lines[1].shift() === "Distance:");
+	if (mode == 2)
+		lines = lines.map(l => [l.join("")]);
 	var times: Array<number> =
 		lines[0].map(s => parseInt(s, 0xA));
 	var distances: Array<number> =
