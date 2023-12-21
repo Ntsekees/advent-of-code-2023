@@ -7,5 +7,6 @@
 * [Day 4 in Julia](day-4/day-4.jl)
 * [Day 5 in Haskell](day-5/day-5.hs)
 * [Day 6 in TypeScript](day-6/index.ts)
+* [Day 7 in Nim](day-7/day_7.nim)
 
 
